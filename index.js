@@ -33,7 +33,6 @@ app.route('/api/users')
         "error" : "Could not fetch users",
         "cause" : err
       })
-      console.log(`sending users:\n${users.toString()}`)
       res.json(users)
     })
   })
@@ -49,6 +48,32 @@ app.route('/api/users')
     })
   })
 
+
+// Create exercise
+app.post('/api/users/:id/exercises', (req, res)=>{
+  let userId = req.params.id
+  let exercise = new db.Exercise({
+    description : req.body.description,
+    duration : req.body.duration,
+    date : dateCheck(req.body.date)
+  })
+  db.createExercise(exercise, userId, (err, doc)=>{
+    if (err) return res.json({
+      "error" : "Could not save exercise.",
+      "cause" : err
+    })
+    let lastEx = doc.log.pop()
+    let result = {
+      "_id" : doc._id,
+      "username" : doc.username,
+      "description" : lastEx.description,
+      "duration" : lastEx.duration,
+      "date" : lastEx.date.toDateString()
+    }
+    res.json(result)
+  })
+
+})
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {

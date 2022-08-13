@@ -1,8 +1,13 @@
 
 
 CRUD operations in persistence.js
-get all: select (name)
 
 Expose functionality
 
-Test first endpoint
+
+create exercise CRUD:
+1- create exercise model with body data
+2- find user by id
+3- push model into user's log array
+4- save user (update)
+5- return DTO (id, username, description, duration, date)

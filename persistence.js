@@ -35,16 +35,39 @@ const getUsers = (done)=>{
   })
 }
 
+// Find user by id
+
+const findUserById = (id, done)=>{
+  User.findById(id,(err, user)=>{
+    if (err) return done(err)
+    done(null, user)
+  })
+}
+
 // Create a user
 const createUser = (username, done)=>{
   let user = new User({
     username: username,
     count : 0
   })
-  user.save(user, (err, data)=>{
+  user.save((err, data)=>{
     if (err) return done(err)
-    console.log(data)
     done(null, data)
+  })
+}
+
+// Create an exercise
+const createExercise = (exercise, userId, done)=>{
+  findUserById(userId, (err, foundUser)=>{
+    if (err) return done(err)
+    let user = foundUser
+    // add new exercise to user's log
+    user.log.push(exercise)
+    // update user with new exercise
+    user.save((err, doc)=>{
+      if (err) return done(err)
+      done(null, doc)
+    })
   })
 }
 
@@ -58,3 +81,5 @@ exports.Exercise = Exercise
 
 exports.getUsers = getUsers
 exports.createUser = createUser
+
+exports.createExercise = createExercise
