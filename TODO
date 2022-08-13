@@ -1,0 +1,8 @@
+
+
+CRUD operations in persistence.js
+get all: select (name)
+
+Expose functionality
+
+Test first endpoint
