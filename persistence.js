@@ -3,6 +3,8 @@
 const mongoose = require('mongoose')
 require('dotenv').config()
 
+// Debug
+//mongoose.set('debug', true)
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true });
@@ -63,6 +65,8 @@ const createExercise = (exercise, userId, done)=>{
     let user = foundUser
     // add new exercise to user's log
     user.log.push(exercise)
+    // update exercise count
+    user.count = user.log.length
     // update user with new exercise
     user.save((err, doc)=>{
       if (err) return done(err)
@@ -71,9 +75,39 @@ const createExercise = (exercise, userId, done)=>{
   })
 }
 
+// Read exercise logs
+const readLogs = (userId, from, to, lim, done)=>{
+  // Using aggregation:
+  User.aggregate([
+    {$match : {_id :  new mongoose.Types.ObjectId(userId)}},
+    {
+      $project : {
+        username : 1,
+        count : 1,
+        log: { $slice : [
+          {$filter : {
+            input : "$log",
+            cond : { $and : [
+              {$gte : ["$$exercise.date", from]},
+              {$lte : ["$$exercise.date", to]}
+            ] },
+            as : "exercise"
+          }}, lim, {$size : "$log"}] 
+        }
+      }
+    },
+    {
+      $project : { 'log._id' : 0, } 
+    }
+  ],
+    (err, user)=>{
+      if (err) return done(err);
+      done(null, user)
+    })
+}
 
 
-// Expose CRUD operations and Models (if needed)
+// Expose CRUD operations and Models
 exports = module.exports
 
 exports.User = User
@@ -81,5 +115,5 @@ exports.Exercise = Exercise
 
 exports.getUsers = getUsers
 exports.createUser = createUser
-
 exports.createExercise = createExercise
+exports.readLogs = readLogs

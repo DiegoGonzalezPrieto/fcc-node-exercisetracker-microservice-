@@ -11,6 +11,7 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+
 /* Middleware */
 
 app.use(bodyParser.urlencoded({extended: false}))
@@ -75,6 +76,25 @@ app.post('/api/users/:id/exercises', (req, res)=>{
 
 })
 
+// Get logs
+app.get('/api/users/:_id/logs', (req, res)=>{
+  let from = req.query.from ? new Date(req.query.from) : new Date(0);
+  let to = req.query.to ? new Date(req.query.to) : new Date();
+  let limit = req.query.limit ? - parseInt(req.query.limit) : 0;
+
+  db.readLogs(req.params._id, from, to, limit,
+    (err, user)=>{
+      if (err) return res.json({
+        "error" : "Couldn't fetch logs.",
+        "cause" : err
+      })
+      let result = user[0]
+      result.log.forEach(ex=>{
+        ex.date = ex.date.toDateString()
+      })
+      res.json(result)
+    })
+})
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
